@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commentary Dashboard</title>
+</head>
+<body>
+    <h1>Commentary Dashboard</h1>
+    <textarea id="commentaryInput" rows="5" cols="50" placeholder="Enter live commentary"></textarea><br>
+    <button id="submitCommentary">Submit Commentary</button>
+
+    <script>
+        document.getElementById('submitCommentary').addEventListener('click', () => {
+            const commentary = document.getElementById('commentaryInput').value;
+
+            // Send commentary to the server
+            fetch('http://localhost:3001/commentary', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ commentary })
+            }).then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                document.getElementById('commentaryInput').value = ''; // Clear input
+            }).catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
