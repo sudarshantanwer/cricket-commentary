@@ -12,6 +12,9 @@ const io = socketIo(server);
 app.use(cors());
 app.use(express.json());
 
+// Serve static files from the 'public' folder
+app.use(express.static('public'));
+
 let currentCommentary = "";
 
 // Handle real-time connections
