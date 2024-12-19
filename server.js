@@ -6,18 +6,32 @@ const cors = require('cors');
 // Create an express app
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+
+// Middleware to serve static files
+app.use(express.static('public'));
+
+// Middleware to parse incoming request bodies
+app.use(express.json()); // Add this line to handle JSON bodies
+app.use(express.urlencoded({ extended: true })); // To handle URL-encoded bodies
 
 // Use CORS to allow communication between different domains (React app)
-app.use(cors());
-app.use(express.json());
+app.use(cors({
+    origin: 'http://localhost:3000',  // Allow React app's URL
+    methods: ['GET', 'POST'],          // Allow these methods
+    credentials: true                  // Allow cookies to be sent with requests
+}));
 
-// Serve static files from the 'public' folder
-app.use(express.static('public'));
+// Set up Socket.IO
+const io = socketIo(server, {
+    cors: {
+        origin: "http://localhost:3000",  // Allow the React app's URL for WebSocket connections
+        methods: ["GET", "POST"]
+    }
+});
 
 let currentCommentary = "";
 
-// Handle real-time connections
+// Socket.IO logic
 io.on('connection', (socket) => {
     console.log('New client connected:', socket.id);
 
@@ -29,9 +43,14 @@ io.on('connection', (socket) => {
     });
 });
 
-// Endpoint to receive new commentary from the dashboard
+// REST endpoint to receive new commentary
 app.post('/commentary', (req, res) => {
     const { commentary } = req.body;
+
+    if (!commentary) {
+        return res.status(400).send({ error: 'Commentary is required' });
+    }
+
     currentCommentary = commentary;
 
     // Broadcast new commentary to all connected clients
